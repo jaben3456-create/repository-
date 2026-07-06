@@ -4,6 +4,8 @@ function renderHoldings(state) {
   const root = document.getElementById('tab-holdings');
   root.innerHTML = '';
 
+  root.appendChild(renderSyncCard(state, { onDone: () => { renderHoldings(state); renderDashboard(state); } }));
+
   const formCard = el('div', { class: 'card' });
   formCard.appendChild(el('h2', { text: 'Add / edit a position' }));
   formCard.appendChild(el('p', { class: 'card-sub', text: 'Enter shares, average cost, and the current price. Update the price whenever you check your brokerage so daily returns stay accurate.' }));

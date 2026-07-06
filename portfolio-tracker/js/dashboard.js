@@ -9,6 +9,8 @@ function renderDashboard(state) {
   const daily = computeDailyChange(state);
   const divStats = dividendStats(state);
 
+  root.appendChild(renderSyncCard(state, { compact: true, onDone: () => renderDashboard(state) }));
+
   const statGrid = el('div', { class: 'stat-grid' });
 
   statGrid.appendChild(makeStatTile('Total portfolio value', formatCurrency(totals.total), null));

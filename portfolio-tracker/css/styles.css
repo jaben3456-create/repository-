@@ -382,6 +382,18 @@ details.table-toggle {
   margin-top: 8px;
 }
 
+.sync-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
 footer.app-footer {
   text-align: center;
   color: var(--text-muted);
