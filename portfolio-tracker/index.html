@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portfolio Tracker</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>Portfolio Tracker</h1>
+  <p>Robinhood + M1 Finance holdings, daily returns, dividends, and long-term projections — all stored locally in this browser.</p>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="dashboard" class="active">Dashboard</button>
+  <button data-tab="holdings">Holdings &amp; Sync</button>
+  <button data-tab="dividends">Dividends</button>
+  <button data-tab="projection">20-Year Projection</button>
+</nav>
+
+<main>
+  <section class="tab-panel active" id="tab-dashboard"></section>
+  <section class="tab-panel" id="tab-holdings"></section>
+  <section class="tab-panel" id="tab-dividends"></section>
+  <section class="tab-panel" id="tab-projection"></section>
+</main>
+
+<footer class="app-footer">
+  All data stays in this browser's local storage — nothing is sent anywhere. Use the JSON backup in Holdings &amp; Sync to move data between devices/browsers.
+</footer>
+
+<script src="js/util.js"></script>
+<script src="js/state.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/holdings.js"></script>
+<script src="js/dividends.js"></script>
+<script src="js/projection.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
