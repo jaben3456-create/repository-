@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ptrack-v1';
+const CACHE_NAME = 'ptrack-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './js/util.js',
   './js/state.js',
   './js/sync.js',
+  './js/robinhood.js',
   './js/charts.js',
   './js/dashboard.js',
   './js/holdings.js',

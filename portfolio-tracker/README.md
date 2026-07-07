@@ -2,16 +2,17 @@
 
 A local, private dashboard for tracking your Robinhood and M1 Finance holdings side by side: daily returns, a dividend tracker, and a 20-year compounding projection.
 
-## Why there's no "connect your account" button
+## Getting your holdings in
 
-Robinhood and M1 Finance don't offer official public APIs for personal account access. Tools that claim to "auto-sync" typically log in with your real username and password using unofficial, reverse-engineered libraries — that violates both brokerages' Terms of Service and can get your account flagged or locked, and it means handing your brokerage credentials to a third-party script. This app doesn't do that.
+Robinhood and M1 Finance don't offer official public APIs for personal account access. Tools that claim to "auto-sync" by logging in with your real username and password using unofficial, reverse-engineered libraries violate both brokerages' Terms of Service and can get your account flagged or locked. This app doesn't do that.
 
-Instead, you feed it your share counts and cost basis yourself, in whichever way is least annoying:
+There are three ways to get positions into the tracker:
 
 - **Manual entry** — a quick form for a handful of positions or dividends.
-- **CSV import** — this app defines its own simple CSV format (a template you can download from the app). Fill it in from whatever you see in the Robinhood/M1 apps, or export from a spreadsheet, and bulk-import.
+- **CSV import** — this app defines its own simple CSV format (a template you can download from the app). Works for both Robinhood and M1.
+- **Connect Robinhood automatically** — via [SnapTrade](https://snaptrade.com), a legitimate read-only account-aggregation service (the same kind of thing apps like Delta use). You log into Robinhood directly on Robinhood's own page with Robinhood's own 2FA; neither SnapTrade nor this app ever sees your password. **M1 Finance isn't supported by SnapTrade**, so M1 stays CSV/manual either way. Setting this up requires deploying a small companion backend — see [`snaptrade-api/README.md`](../snaptrade-api/README.md) for the full walkthrough.
 
-Current *prices*, on the other hand, can be pulled in automatically — see **Live price sync** below.
+Current *prices*, meanwhile, can be pulled in automatically for any position regardless of how it was entered — see **Live price sync** below.
 
 ## Live price sync
 
