@@ -34,7 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll(appState);
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('Service worker registration failed', err));
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+      .then((reg) => reg.update().catch(() => {}))
+      .catch((err) => console.warn('Service worker registration failed', err));
   }
 
   maybeAutoRefreshPrices(appState);
