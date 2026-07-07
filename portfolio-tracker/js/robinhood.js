@@ -26,7 +26,10 @@ async function callSnapTradeApi(path) {
     headers: { Authorization: `Bearer ${token}` },
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+  if (!res.ok) {
+    const detail = typeof body.error === 'string' ? body.error : (body.error ? JSON.stringify(body.error) : `HTTP ${res.status}`);
+    throw new Error(detail);
+  }
   return body;
 }
 

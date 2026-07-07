@@ -1,4 +1,4 @@
-const { setCors, requireAuth, getClient, getUserCreds } = require('./_lib');
+const { setCors, requireAuth, getClient, getUserCreds, errorMessage } = require('./_lib');
 
 // Returns a one-time SnapTrade Connection Portal URL (expires in 5 minutes)
 // that sends the user to Robinhood's own login/2FA, then back to SnapTrade
@@ -26,6 +26,6 @@ module.exports = async (req, res) => {
     const data = result && result.data ? result.data : result;
     return res.status(200).json({ redirectURI: data.redirectURI });
   } catch (err) {
-    return res.status(500).json({ error: err.responseBody || err.message || String(err) });
+    return res.status(500).json({ error: errorMessage(err) });
   }
 };
