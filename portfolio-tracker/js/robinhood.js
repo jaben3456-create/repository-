@@ -30,6 +30,12 @@ async function callSnapTradeApi(path) {
   return body;
 }
 
+async function registerSnapTradeUser() {
+  const { userSecret } = await callSnapTradeApi('/api/register');
+  if (!userSecret) throw new Error('No userSecret returned.');
+  return userSecret;
+}
+
 async function connectRobinhood() {
   const { redirectURI } = await callSnapTradeApi('/api/connect');
   if (!redirectURI) throw new Error('No connection URL returned.');
@@ -72,9 +78,32 @@ function renderRobinhoodCard(state, { onDone } = {}) {
   configRow.appendChild(saveBtn);
   card.appendChild(configRow);
 
+  const setupRow = el('div', { class: 'btn-row' });
+  const registerBtn = el('button', { class: 'btn secondary', type: 'button', text: 'Step 1: Register (one-time setup)' });
+  setupRow.appendChild(registerBtn);
+  card.appendChild(setupRow);
+
+  const secretOutput = el('input', { type: 'text', readonly: true, style: 'display:none;max-width:100%;margin-bottom:10px;font-family:monospace;font-size:0.8rem', value: '' });
+  card.appendChild(secretOutput);
+
+  registerBtn.addEventListener('click', async () => {
+    registerBtn.disabled = true;
+    try {
+      const secret = await registerSnapTradeUser();
+      secretOutput.value = secret;
+      secretOutput.style.display = 'block';
+      secretOutput.select();
+      lastRobinhoodMessage = 'Copy this value into the SNAPTRADE_USER_SECRET environment variable in Vercel, then redeploy. You only need to do this once.';
+    } catch (err) {
+      lastRobinhoodMessage = `Error: ${err.message}`;
+    }
+    statusEl.textContent = lastRobinhoodMessage;
+    registerBtn.disabled = false;
+  });
+
   const actionRow = el('div', { class: 'btn-row' });
-  const connectBtn = el('button', { class: 'btn', type: 'button', text: 'Connect Robinhood' });
-  const syncBtn = el('button', { class: 'btn', type: 'button', text: 'Sync Robinhood holdings' });
+  const connectBtn = el('button', { class: 'btn', type: 'button', text: 'Step 2: Connect Robinhood' });
+  const syncBtn = el('button', { class: 'btn', type: 'button', text: 'Step 3: Sync Robinhood holdings' });
   actionRow.appendChild(connectBtn);
   actionRow.appendChild(syncBtn);
   actionRow.appendChild(statusEl);

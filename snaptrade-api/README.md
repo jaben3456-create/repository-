@@ -30,22 +30,16 @@ Sign up at [snaptrade.com](https://snaptrade.com). The Free Plan (1 connected us
 
 4. Deploy. Note the resulting URL, e.g. `https://your-project.vercel.app`.
 
-### 3. Register your SnapTrade user (once)
-
-Call the register endpoint once, with your access token, to create your SnapTrade user and get a `userSecret`:
-
-```
-curl -H "Authorization: Bearer <your API_ACCESS_TOKEN>" https://your-project.vercel.app/api/register
-```
-
-Copy the `userSecret` from the response into a new environment variable **`SNAPTRADE_USER_SECRET`** in Vercel, then redeploy. You only need to do this once — after this, the backend has everything it needs.
-
-### 4. Connect the frontend
+### 3. Connect the frontend and register your SnapTrade user (once)
 
 In the portfolio tracker's Holdings & Sync tab, under "Connect Robinhood (via SnapTrade)":
-1. Enter your Vercel URL (e.g. `https://your-project.vercel.app`) and the same `API_ACCESS_TOKEN` you set above, click **Save connection settings**.
-2. Click **Connect Robinhood** — you'll be sent to Robinhood's login (via SnapTrade's hosted portal), log in there, confirm read-only access, then return to the app.
-3. Click **Sync Robinhood holdings** — pulls your current Robinhood positions and replaces any existing Robinhood entries in the tracker with the fresh data.
+1. Enter your Vercel URL (e.g. `https://your-project.vercel.app`) and the `API_ACCESS_TOKEN` you set above, click **Save connection settings**.
+2. Click **Step 1: Register (one-time setup)** — this calls `/api/register` and shows you the resulting `userSecret` in a text box (pre-selected, so you can just copy it — works fine from a phone, no terminal needed).
+3. Copy that value into a new environment variable **`SNAPTRADE_USER_SECRET`** in Vercel, then redeploy. You only need to do this once — after this, the backend has everything it needs and this step can be skipped on future visits.
+4. Click **Step 2: Connect Robinhood** — you'll be sent to Robinhood's login (via SnapTrade's hosted portal), log in there, confirm read-only access, then return to the app.
+5. Click **Step 3: Sync Robinhood holdings** — pulls your current Robinhood positions and replaces any existing Robinhood entries in the tracker with the fresh data.
+
+(If you'd rather use a terminal: `curl -H "Authorization: Bearer <your API_ACCESS_TOKEN>" https://your-project.vercel.app/api/register` does the same thing as Step 1.)
 
 ## Endpoints
 
