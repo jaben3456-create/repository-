@@ -1,0 +1,9 @@
+{
+  "name": "snaptrade-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serverless proxy for SnapTrade (Robinhood connection) used by the portfolio tracker.",
+  "dependencies": {
+    "snaptrade-typescript-sdk": "^10.0.18"
+  }
+}

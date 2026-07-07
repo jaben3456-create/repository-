@@ -5,6 +5,7 @@ function renderHoldings(state) {
   root.innerHTML = '';
 
   root.appendChild(renderSyncCard(state, { onDone: () => { renderHoldings(state); renderDashboard(state); } }));
+  root.appendChild(renderRobinhoodCard(state, { onDone: () => { renderHoldings(state); renderDashboard(state); } }));
 
   const formCard = el('div', { class: 'card' });
   formCard.appendChild(el('h2', { text: 'Add / edit a position' }));
