@@ -55,6 +55,16 @@ async function refreshAllPrices(state, { onProgress } = {}) {
   return { ok: true, ...results };
 }
 
+const AUTO_REFRESH_STALE_MS = 5 * 60 * 1000;
+
+async function maybeAutoRefreshPrices(state) {
+  if (!getApiKey()) return;
+  const lastSynced = state.lastSyncedAt ? new Date(state.lastSyncedAt).getTime() : 0;
+  if (Date.now() - lastSynced < AUTO_REFRESH_STALE_MS) return;
+  await refreshAllPrices(state);
+  renderAll(state);
+}
+
 function formatSyncedAgo(isoString) {
   if (!isoString) return 'Never synced';
   const diffMs = Date.now() - new Date(isoString).getTime();
@@ -74,7 +84,7 @@ function renderSyncCard(state, { compact = false, onDone } = {}) {
 
   if (!compact) {
     card.appendChild(el('h2', { text: 'Live price sync' }));
-    card.appendChild(el('p', { class: 'card-sub', text: "Pull current prices for every symbol you hold from Finnhub (a free market-data API — not a brokerage login) instead of typing prices in by hand." }));
+    card.appendChild(el('p', { class: 'card-sub', text: "Pull current prices for every symbol you hold from Finnhub (a free market-data API — not a brokerage login) instead of typing prices in by hand. Once a key is saved, prices also auto-refresh whenever you open the app (if it's been more than 5 minutes since the last sync)." }));
   }
 
   const statusEl = el('span', { class: 'help-text sync-status', text: lastSyncMessage || formatSyncedAgo(state.lastSyncedAt) });
