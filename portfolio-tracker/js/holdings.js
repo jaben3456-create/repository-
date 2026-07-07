@@ -219,5 +219,18 @@ function renderHoldings(state) {
   backupRow.appendChild(exportBtn);
   backupRow.appendChild(importInput);
   backupCard.appendChild(backupRow);
+
+  const resetRow = el('div', { class: 'btn-row' });
+  const resetBtn = el('button', { class: 'btn danger', type: 'button', text: 'Reset all data' });
+  resetBtn.addEventListener('click', () => {
+    if (!confirm('This permanently erases all positions, dividends, and value history in this browser. This cannot be undone. Continue?')) return;
+    Object.assign(state, defaultState());
+    saveState(state);
+    renderAll(state);
+    alert('All data has been reset.');
+  });
+  resetRow.appendChild(resetBtn);
+  backupCard.appendChild(el('p', { class: 'help-text', text: 'This clears portfolio data only — your saved Finnhub API key and Robinhood connection are left in place.' }));
+  backupCard.appendChild(resetRow);
   root.appendChild(backupCard);
 }
