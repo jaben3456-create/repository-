@@ -23,17 +23,40 @@ module.exports = async (req, res) => {
       });
       const accountPositions = unwrap(posResult);
 
+      let positionsSum = 0;
       for (const p of accountPositions) {
         const universalSymbol = p.symbol && p.symbol.symbol;
         const ticker = universalSymbol && (universalSymbol.raw_symbol || universalSymbol.symbol);
         if (!ticker || !p.units) continue;
+        const price = p.price != null ? p.price : (p.average_purchase_price || 0);
+        positionsSum += p.units * price;
         positions.push({
           account: 'Robinhood',
           symbol: ticker,
           shares: p.units,
-          avgCost: p.average_purchase_price != null ? p.average_purchase_price : (p.price || 0),
-          price: p.price != null ? p.price : (p.average_purchase_price || 0),
+          avgCost: p.average_purchase_price != null ? p.average_purchase_price : price,
+          price,
         });
+      }
+
+      // Reconcile against the brokerage's own authoritative account total
+      // (which includes cash, and anything else - e.g. options - that this
+      // endpoint doesn't return) so cash on the sidelines isn't silently
+      // dropped from the portfolio total.
+      const totalAmount = account.balance && account.balance.total && typeof account.balance.total.amount === 'number'
+        ? account.balance.total.amount
+        : null;
+      if (totalAmount != null) {
+        const remainder = totalAmount - positionsSum;
+        if (Math.abs(remainder) > 0.01) {
+          positions.push({
+            account: 'Robinhood',
+            symbol: 'CASH',
+            shares: remainder,
+            avgCost: 1,
+            price: 1,
+          });
+        }
       }
     }
 
