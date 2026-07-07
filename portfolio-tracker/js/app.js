@@ -32,4 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
   recordSnapshot(appState);
   saveState(appState);
   renderAll(appState);
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('Service worker registration failed', err));
+  }
 });

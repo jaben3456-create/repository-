@@ -26,6 +26,23 @@ The key is stored only in this browser's `localStorage`, in a separate slot from
 
 You can skip all of this and just type in prices by hand — the app works the same either way.
 
+## Installing it on your iPhone Home Screen
+
+This app is a installable PWA (manifest, icons, offline service worker), but iOS will only let you "Add to Home Screen" from a page served over HTTPS — not a local file. The repo includes a GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) that publishes `portfolio-tracker/` to GitHub Pages automatically.
+
+One-time setup (repo owner, ~30 seconds):
+1. The repository needs to be **public** for free GitHub Pages (unless you have GitHub Pro/Team). Nothing sensitive lives in the repo — your portfolio data only ever lives in your phone's browser storage, never in this code.
+2. In the repo on github.com: **Settings → Pages → Source → GitHub Actions**.
+3. Merge this branch to `main` (or go to the **Actions** tab and manually run "Deploy portfolio-tracker to GitHub Pages" against this branch to test first).
+4. After the workflow finishes, your Pages URL appears in the workflow run summary and in Settings → Pages — something like `https://<your-username>.github.io/<repo-name>/`.
+
+On your iPhone:
+1. Open that URL in **Safari** (must be Safari, not Chrome — only Safari exposes "Add to Home Screen" on iOS).
+2. Tap the **Share** icon → **Add to Home Screen** → **Add**.
+3. Open it from the new Home Screen icon — it launches full-screen with no browser address bar, and keeps working offline since the app shell is cached by a service worker.
+
+Your data doesn't move or sync between devices automatically (it's still per-browser `localStorage`) — use the JSON backup/restore in Holdings & Sync if you also use the app on desktop and want the same data on your phone.
+
 ## Running it
 
 No build step, no dependencies, no server required.
