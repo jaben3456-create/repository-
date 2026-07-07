@@ -4,6 +4,6 @@
   "private": true,
   "description": "Serverless proxy for SnapTrade (Robinhood connection) used by the portfolio tracker.",
   "dependencies": {
-    "snaptrade-typescript-sdk": "^10.0.18"
+    "snaptrade-typescript-sdk": "^11.0.0-canary.0"
   }
 }

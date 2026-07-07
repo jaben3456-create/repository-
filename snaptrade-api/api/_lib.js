@@ -1,4 +1,4 @@
-const { Snaptrade } = require('snaptrade-typescript-sdk');
+const { Snaptrade, SnaptradeAuth } = require('snaptrade-typescript-sdk');
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
@@ -17,18 +17,17 @@ function requireAuth(req, res) {
   return true;
 }
 
+// This app uses a Personal SnapTrade API key, which auto-provisions a
+// single implicit user (no registerSnapTradeUser / userId / userSecret -
+// that's the Commercial-key model). SnaptradeAuth.personalApiKey() is what
+// signals that mode to the SDK.
 function getClient() {
   return new Snaptrade({
-    consumerKey: process.env.SNAPTRADE_CONSUMER_KEY,
-    clientId: process.env.SNAPTRADE_CLIENT_ID,
+    auth: SnaptradeAuth.personalApiKey({
+      consumerKey: process.env.SNAPTRADE_CONSUMER_KEY,
+      clientId: process.env.SNAPTRADE_CLIENT_ID,
+    }),
   });
-}
-
-function getUserCreds() {
-  return {
-    userId: process.env.SNAPTRADE_USER_ID,
-    userSecret: process.env.SNAPTRADE_USER_SECRET,
-  };
 }
 
 // The generated SDK sometimes returns the raw payload and sometimes an
@@ -55,4 +54,4 @@ function errorMessage(err) {
   return (err && err.message) || String(err);
 }
 
-module.exports = { setCors, requireAuth, getClient, getUserCreds, unwrap, errorMessage };
+module.exports = { setCors, requireAuth, getClient, unwrap, errorMessage };

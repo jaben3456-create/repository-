@@ -1,28 +1,24 @@
-const { setCors, requireAuth, getClient, getUserCreds, unwrap, errorMessage } = require('./_lib');
+const { setCors, requireAuth, getClient, unwrap, errorMessage } = require('./_lib');
 
 // Fetches every connected Robinhood account's current positions and shapes
 // them to match the portfolio tracker's own position schema:
 // { account, symbol, shares, avgCost, price }.
+//
+// Personal SnapTrade API keys have one implicit user - do not pass
+// userId/userSecret (see connect.js for why).
 module.exports = async (req, res) => {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (!requireAuth(req, res)) return;
 
-  const { userId, userSecret } = getUserCreds();
-  if (!userId || !userSecret) {
-    return res.status(400).json({ error: 'Not connected yet. Use "Connect Robinhood" first.' });
-  }
-
   try {
     const snaptrade = getClient();
-    const accountsResult = await snaptrade.accountInformation.listUserAccounts({ userId, userSecret });
+    const accountsResult = await snaptrade.accountInformation.listUserAccounts({});
     const accounts = unwrap(accountsResult);
 
     const positions = [];
     for (const account of accounts) {
       const posResult = await snaptrade.accountInformation.getUserAccountPositions({
-        userId,
-        userSecret,
         accountId: account.id,
       });
       const accountPositions = unwrap(posResult);
