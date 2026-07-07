@@ -92,7 +92,7 @@ function renderHoldings(state) {
 
   const importCard = el('div', { class: 'card' });
   importCard.appendChild(el('h2', { text: 'Bulk import via CSV' }));
-  importCard.appendChild(el('p', { class: 'card-sub', text: "Robinhood and M1 don't offer an official positions-export file, so this app defines its own simple CSV format. Download the template, fill it in with your holdings (copy from either app), then import." }));
+  importCard.appendChild(el('p', { class: 'card-sub', text: "Robinhood and M1 don't offer an official positions-export file, so this app defines its own simple CSV format. Download the template, fill it in with your holdings (copy from either app), then import. Re-importing a symbol you already have updates it in place instead of creating a duplicate — see \"Quick re-import\" below for a faster way to do that for M1." }));
 
   const btnRow = el('div', { class: 'btn-row' });
   const templateBtn = el('button', { class: 'btn secondary', type: 'button', text: 'Download CSV template' });
@@ -105,28 +105,54 @@ function renderHoldings(state) {
     if (!file) return;
     const text = await file.text();
     const rows = parseCSV(text);
-    let imported = 0;
+    let added = 0;
+    let updated = 0;
     for (const row of rows) {
-      const account = getField(row, ['account', 'broker', 'brokerage']);
+      const account = getField(row, ['account', 'broker', 'brokerage']) || 'Other';
       const symbol = getField(row, ['symbol', 'ticker']);
       const shares = toNumber(getField(row, ['shares', 'quantity', 'qty', 'units']));
       const avgCost = toNumber(getField(row, ['avgcost', 'averagecost', 'costbasis', 'avgprice', 'averageprice', 'cost']));
       const price = toNumber(getField(row, ['price', 'currentprice', 'lastprice', 'marketprice']));
       if (!symbol || !isFinite(shares) || !isFinite(avgCost) || !isFinite(price)) continue;
-      state.positions.push({ id: uid(), account: account || 'Other', symbol: symbol.toUpperCase(), shares, avgCost, price, updatedAt: todayStr() });
-      imported++;
+      const upperSymbol = symbol.toUpperCase();
+      const existing = state.positions.find((p) => p.account === account && p.symbol === upperSymbol);
+      if (existing) {
+        Object.assign(existing, { shares, avgCost, price, updatedAt: todayStr() });
+        updated++;
+      } else {
+        state.positions.push({ id: uid(), account, symbol: upperSymbol, shares, avgCost, price, updatedAt: todayStr() });
+        added++;
+      }
     }
     recordSnapshot(state);
     saveState(state);
     renderHoldings(state);
     renderDashboard(state);
     fileInput.value = '';
-    alert(`Imported ${imported} position(s).`);
+    alert(`Added ${added} new position(s), updated ${updated} existing position(s).`);
   });
   btnRow.appendChild(templateBtn);
   btnRow.appendChild(fileInput);
   importCard.appendChild(btnRow);
   root.appendChild(importCard);
+
+  const quickReimportCard = el('div', { class: 'card' });
+  quickReimportCard.appendChild(el('h2', { text: 'Quick re-import (M1 Finance)' }));
+  quickReimportCard.appendChild(el('p', { class: 'card-sub', text: "Since M1 can't sync automatically, this exports your current M1 holdings as a CSV pre-filled with what's already in the tracker — open it, update shares/prices from the M1 app, save, then import it back above. No new secrets, no network calls; it's just a file on your device." }));
+  const quickBtnRow = el('div', { class: 'btn-row' });
+  const exportM1Btn = el('button', { class: 'btn secondary', type: 'button', text: 'Export current M1 holdings as CSV' });
+  exportM1Btn.addEventListener('click', () => {
+    const m1Positions = state.positions.filter((p) => p.account === 'M1 Finance');
+    if (!m1Positions.length) {
+      alert('No M1 Finance positions yet. Add some manually above first, then use this button to quickly re-export/re-import updates going forward.');
+      return;
+    }
+    const lines = m1Positions.map((p) => `M1 Finance,${p.symbol},${p.shares},${p.avgCost},${p.price}`);
+    downloadFile(`m1-holdings-${todayStr()}.csv`, ['Account,Symbol,Shares,AvgCost,CurrentPrice', ...lines].join('\n'), 'text/csv');
+  });
+  quickBtnRow.appendChild(exportM1Btn);
+  quickReimportCard.appendChild(quickBtnRow);
+  root.appendChild(quickReimportCard);
 
   const positionsCard = el('div', { class: 'card' });
   positionsCard.appendChild(el('h2', { text: 'Your positions' }));
