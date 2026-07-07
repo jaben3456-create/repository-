@@ -39,4 +39,20 @@ function unwrap(result) {
   return result || [];
 }
 
-module.exports = { setCors, requireAuth, getClient, getUserCreds, unwrap };
+// SnapTrade SDK errors carry the real detail in err.responseBody, which is
+// often a parsed object (not a string) - stringify it so callers see the
+// actual reason instead of "[object Object]".
+function errorMessage(err) {
+  const body = err && err.responseBody;
+  if (body) {
+    if (typeof body === 'string') return body;
+    try {
+      return JSON.stringify(body);
+    } catch (e) {
+      // fall through
+    }
+  }
+  return (err && err.message) || String(err);
+}
+
+module.exports = { setCors, requireAuth, getClient, getUserCreds, unwrap, errorMessage };

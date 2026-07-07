@@ -1,4 +1,4 @@
-const { setCors, requireAuth, getClient, getUserCreds, unwrap } = require('./_lib');
+const { setCors, requireAuth, getClient, getUserCreds, unwrap, errorMessage } = require('./_lib');
 
 // Fetches every connected Robinhood account's current positions and shapes
 // them to match the portfolio tracker's own position schema:
@@ -43,6 +43,6 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({ positions });
   } catch (err) {
-    return res.status(500).json({ error: err.responseBody || err.message || String(err) });
+    return res.status(500).json({ error: errorMessage(err) });
   }
 };

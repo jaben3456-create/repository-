@@ -1,4 +1,4 @@
-const { setCors, requireAuth, getClient } = require('./_lib');
+const { setCors, requireAuth, getClient, errorMessage } = require('./_lib');
 
 // One-time setup call: creates the single SnapTrade user this personal app
 // uses, and returns the userSecret you then paste into the
@@ -25,6 +25,6 @@ module.exports = async (req, res) => {
       next: 'Copy userSecret into the SNAPTRADE_USER_SECRET environment variable in your Vercel project, then redeploy. You only need to do this once.',
     });
   } catch (err) {
-    return res.status(500).json({ error: err.responseBody || err.message || String(err) });
+    return res.status(500).json({ error: errorMessage(err) });
   }
 };
