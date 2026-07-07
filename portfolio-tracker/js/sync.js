@@ -32,7 +32,7 @@ async function fetchQuote(symbol, apiKey) {
 async function refreshAllPrices(state, { onProgress } = {}) {
   const apiKey = getApiKey();
   if (!apiKey) return { ok: false, reason: 'no-key', updated: [], failed: [] };
-  const symbols = [...new Set(state.positions.map((p) => p.symbol))];
+  const symbols = [...new Set(state.positions.map((p) => p.symbol).filter((s) => s !== 'CASH'))];
   if (!symbols.length) return { ok: true, reason: 'no-positions', updated: [], failed: [] };
 
   const results = { updated: [], failed: [] };

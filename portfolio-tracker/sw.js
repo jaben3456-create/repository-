@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ptrack-v3';
+const CACHE_NAME = 'ptrack-v4';
 const APP_SHELL = [
   './',
   './index.html',
