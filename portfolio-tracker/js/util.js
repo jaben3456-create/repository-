@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'ptrack_state_v1';
+const APP_VERSION = 'v11';
 
 function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
