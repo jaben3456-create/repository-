@@ -46,12 +46,17 @@ function renderHoldings(state) {
     el('label', { text: 'Current price / share' }),
     el('input', { id: 'f-price', type: 'number', step: 'any', min: '0', placeholder: '175.00', value: editing ? editing.price : '' }),
   ]);
+  const divRateField = el('div', { class: 'field' }, [
+    el('label', { text: 'Annual dividend / share (optional)' }),
+    el('input', { id: 'f-divrate', type: 'number', step: 'any', min: '0', placeholder: '0.96', value: editing && editing.divRate ? editing.divRate : '' }),
+  ]);
 
   form.appendChild(accountField);
   form.appendChild(symbolField);
   form.appendChild(sharesField);
   form.appendChild(avgCostField);
   form.appendChild(priceField);
+  form.appendChild(divRateField);
 
   const btnField = el('div', { class: 'field' });
   const submitBtn = el('button', { class: 'btn', type: 'submit', text: editing ? 'Save changes' : 'Add position' });
@@ -71,14 +76,16 @@ function renderHoldings(state) {
     const shares = parseFloat(document.getElementById('f-shares').value);
     const avgCost = parseFloat(document.getElementById('f-avgcost').value);
     const price = parseFloat(document.getElementById('f-price').value);
-    if (!symbol || !isFinite(shares) || !isFinite(avgCost) || !isFinite(price)) {
+    const divRateRaw = document.getElementById('f-divrate').value;
+    const divRate = divRateRaw === '' ? 0 : parseFloat(divRateRaw);
+    if (!symbol || !isFinite(shares) || !isFinite(avgCost) || !isFinite(price) || !isFinite(divRate)) {
       alert('Please fill in symbol, shares, avg cost, and current price with valid numbers.');
       return;
     }
     if (editing) {
-      Object.assign(editing, { account, symbol, shares, avgCost, price, updatedAt: todayStr() });
+      Object.assign(editing, { account, symbol, shares, avgCost, price, divRate, updatedAt: todayStr() });
     } else {
-      state.positions.push({ id: uid(), account, symbol, shares, avgCost, price, updatedAt: todayStr() });
+      state.positions.push({ id: uid(), account, symbol, shares, avgCost, price, divRate, updatedAt: todayStr() });
     }
     editingPositionId = null;
     recordSnapshot(state);
@@ -97,7 +104,7 @@ function renderHoldings(state) {
   const btnRow = el('div', { class: 'btn-row' });
   const templateBtn = el('button', { class: 'btn secondary', type: 'button', text: 'Download CSV template' });
   templateBtn.addEventListener('click', () => {
-    downloadFile('positions-template.csv', 'Account,Symbol,Shares,AvgCost,CurrentPrice\nRobinhood,AAPL,10,150.00,175.00\nM1 Finance,VTI,5,210.00,225.00\n', 'text/csv');
+    downloadFile('positions-template.csv', 'Account,Symbol,Shares,AvgCost,CurrentPrice,AnnualDividendPerShare\nRobinhood,AAPL,10,150.00,175.00,0.96\nM1 Finance,VTI,5,210.00,225.00,3.50\n', 'text/csv');
   });
   const fileInput = el('input', { type: 'file', accept: '.csv', id: 'positions-file' });
   fileInput.addEventListener('change', async (e) => {
@@ -113,14 +120,17 @@ function renderHoldings(state) {
       const shares = toNumber(getField(row, ['shares', 'quantity', 'qty', 'units']));
       const avgCost = toNumber(getField(row, ['avgcost', 'averagecost', 'costbasis', 'avgprice', 'averageprice', 'cost']));
       const price = toNumber(getField(row, ['price', 'currentprice', 'lastprice', 'marketprice']));
+      const divRateField = getField(row, ['divrate', 'dividendrate', 'annualdividend', 'annualdividendpershare', 'dividendpershare', 'divpershare']);
       if (!symbol || !isFinite(shares) || !isFinite(avgCost) || !isFinite(price)) continue;
       const upperSymbol = symbol.toUpperCase();
       const existing = state.positions.find((p) => p.account === account && p.symbol === upperSymbol);
       if (existing) {
-        Object.assign(existing, { shares, avgCost, price, updatedAt: todayStr() });
+        const divRate = divRateField !== undefined ? toNumber(divRateField) : (existing.divRate || 0);
+        Object.assign(existing, { shares, avgCost, price, divRate, updatedAt: todayStr() });
         updated++;
       } else {
-        state.positions.push({ id: uid(), account, symbol: upperSymbol, shares, avgCost, price, updatedAt: todayStr() });
+        const divRate = divRateField !== undefined ? toNumber(divRateField) : 0;
+        state.positions.push({ id: uid(), account, symbol: upperSymbol, shares, avgCost, price, divRate, updatedAt: todayStr() });
         added++;
       }
     }
@@ -147,8 +157,8 @@ function renderHoldings(state) {
       alert('No M1 Finance positions yet. Add some manually above first, then use this button to quickly re-export/re-import updates going forward.');
       return;
     }
-    const lines = m1Positions.map((p) => `M1 Finance,${p.symbol},${p.shares},${p.avgCost},${p.price}`);
-    downloadFile(`m1-holdings-${todayStr()}.csv`, ['Account,Symbol,Shares,AvgCost,CurrentPrice', ...lines].join('\n'), 'text/csv');
+    const lines = m1Positions.map((p) => `M1 Finance,${p.symbol},${p.shares},${p.avgCost},${p.price},${p.divRate || 0}`);
+    downloadFile(`m1-holdings-${todayStr()}.csv`, ['Account,Symbol,Shares,AvgCost,CurrentPrice,AnnualDividendPerShare', ...lines].join('\n'), 'text/csv');
   });
   quickBtnRow.appendChild(exportM1Btn);
   quickReimportCard.appendChild(quickBtnRow);
@@ -162,7 +172,8 @@ function renderHoldings(state) {
     const table = el('table');
     table.appendChild(el('thead', {}, el('tr', {}, [
       el('th', { text: 'Account' }), el('th', { text: 'Symbol' }), el('th', { text: 'Shares' }),
-      el('th', { text: 'Avg cost' }), el('th', { text: 'Price' }), el('th', { text: 'Market value' }), el('th', { text: 'Actions' }),
+      el('th', { text: 'Avg cost' }), el('th', { text: 'Price' }), el('th', { text: 'Market value' }),
+      el('th', { text: 'Div/yr' }), el('th', { text: 'Actions' }),
     ])));
     const tbody = el('tbody');
     state.positions.forEach((p) => {
@@ -184,6 +195,7 @@ function renderHoldings(state) {
         el('td', { text: formatCurrency(p.avgCost) }),
         el('td', { text: formatCurrency(p.price) }),
         el('td', { text: formatCurrency(p.shares * p.price) }),
+        el('td', { text: p.divRate ? formatCurrency(p.divRate * p.shares) : '—' }),
         el('td', { class: 'actions-cell' }, [editBtn, delBtn]),
       ]));
     });

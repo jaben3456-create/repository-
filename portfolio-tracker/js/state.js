@@ -137,6 +137,21 @@ function dividendStats(state) {
   };
 }
 
+function computeProjectedDividends(state) {
+  const rows = state.positions
+    .filter((p) => p.divRate)
+    .map((p) => ({
+      account: p.account,
+      symbol: p.symbol,
+      shares: p.shares,
+      divRate: p.divRate,
+      annual: p.divRate * p.shares,
+    }))
+    .sort((a, b) => b.annual - a.annual);
+  const totalAnnual = rows.reduce((s, r) => s + r.annual, 0);
+  return { rows, totalAnnual, totalMonthly: totalAnnual / 12, totalQuarterly: totalAnnual / 4 };
+}
+
 function buildProjection({ start, rate, years, contribution }) {
   const r = rate / 100;
   const rows = [{ year: 0, balance: start, contributed: 0 }];
