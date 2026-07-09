@@ -68,7 +68,7 @@ function recordSnapshot(state) {
 }
 
 const HOLDING_PERIOD_DAYS = { '1d': 1, '1w': 7, '1m': 30, '3m': 90, '1y': 365 };
-const HOLDING_PERIOD_LABELS = { all: 'vs cost basis', '1d': '1 day', '1w': '1 week', '1m': '1 month', '3m': '3 months', '1y': '1 year' };
+const HOLDING_PERIOD_LABELS = { all: 'All time (vs cost basis)', '1d': '1 day', '1w': '1 week', '1m': '1 month', '3m': '3 months', '1y': '1 year' };
 
 function findSnapshotOnOrBefore(state, targetDateStr) {
   let match = null;
