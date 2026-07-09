@@ -27,11 +27,25 @@ function initTabs() {
   });
 }
 
+function renderVersionFooter() {
+  const el = document.getElementById('app-version');
+  if (!el) return;
+  if ('caches' in window) {
+    caches.keys().then((keys) => {
+      const swCache = keys.find((k) => k.startsWith('ptrack-')) || 'none';
+      el.textContent = `App ${APP_VERSION} — cached as ${swCache}`;
+    }).catch(() => { el.textContent = `App ${APP_VERSION}`; });
+  } else {
+    el.textContent = `App ${APP_VERSION}`;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   recordSnapshot(appState);
   saveState(appState);
   renderAll(appState);
+  renderVersionFooter();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
