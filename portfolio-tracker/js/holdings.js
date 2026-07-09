@@ -7,7 +7,7 @@ function renderHoldings(state) {
   root.appendChild(renderSyncCard(state, { onDone: () => { renderHoldings(state); renderDashboard(state); } }));
   root.appendChild(renderRobinhoodCard(state, { onDone: () => { renderHoldings(state); renderDashboard(state); } }));
 
-  const formCard = el('div', { class: 'card' });
+  const formCard = el('div', { class: 'card', id: 'position-form-card' });
   formCard.appendChild(el('h2', { text: 'Add / edit a position' }));
   formCard.appendChild(el('p', { class: 'card-sub', text: 'Enter shares, average cost, and the current price. Update the price whenever you check your brokerage so daily returns stay accurate.' }));
 
@@ -178,7 +178,11 @@ function renderHoldings(state) {
     const tbody = el('tbody');
     state.positions.forEach((p) => {
       const editBtn = el('button', { class: 'link-btn', text: 'Edit' });
-      editBtn.addEventListener('click', () => { editingPositionId = p.id; renderHoldings(state); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      editBtn.addEventListener('click', () => {
+        editingPositionId = p.id;
+        renderHoldings(state);
+        document.getElementById('position-form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
       const delBtn = el('button', { class: 'link-btn danger', text: 'Delete' });
       delBtn.addEventListener('click', () => {
         if (!confirm(`Delete ${p.symbol} (${p.account})?`)) return;
