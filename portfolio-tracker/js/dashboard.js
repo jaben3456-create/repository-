@@ -1,4 +1,5 @@
 let dashboardShowByAccount = false;
+let dashboardGainPeriod = 'all';
 
 function renderDashboard(state) {
   const root = document.getElementById('tab-dashboard');
@@ -106,7 +107,18 @@ function renderDashboard(state) {
   root.appendChild(trendCard);
 
   const holdingsCard = el('div', { class: 'card' });
-  holdingsCard.appendChild(el('h2', { text: 'Holdings' }));
+  const holdingsHeaderRow = el('div', { class: 'card-header-row' });
+  holdingsHeaderRow.appendChild(el('h2', { text: 'Holdings' }));
+  const periodSelect = el('select', { 'aria-label': 'Gain/loss period' });
+  Object.entries(HOLDING_PERIOD_LABELS).forEach(([value, label]) => {
+    const o = el('option', { value, text: label });
+    if (value === dashboardGainPeriod) o.selected = true;
+    periodSelect.appendChild(o);
+  });
+  periodSelect.addEventListener('change', () => { dashboardGainPeriod = periodSelect.value; renderDashboard(state); });
+  holdingsHeaderRow.appendChild(periodSelect);
+  holdingsCard.appendChild(holdingsHeaderRow);
+
   if (!holdings.length) {
     holdingsCard.appendChild(el('div', { class: 'empty-state', text: 'No holdings yet.' }));
   } else {
@@ -114,10 +126,19 @@ function renderDashboard(state) {
     table.appendChild(el('thead', {}, el('tr', {}, [
       el('th', { text: 'Account' }), el('th', { text: 'Symbol' }), el('th', { text: 'Shares' }),
       el('th', { text: 'Avg cost' }), el('th', { text: 'Price' }), el('th', { text: 'Market value' }),
-      el('th', { text: 'Gain/loss' }),
+      el('th', { text: `Gain/loss (${HOLDING_PERIOD_LABELS[dashboardGainPeriod]})` }),
     ])));
     const tbody = el('tbody');
     holdings.sort((a, b) => b.marketValue - a.marketValue).forEach((h) => {
+      let gainCell;
+      if (dashboardGainPeriod === 'all') {
+        gainCell = el('td', { class: h.gain >= 0 ? 'gain-pos' : 'gain-neg', text: `${h.gain >= 0 ? '+' : ''}${formatCurrency(h.gain)} (${formatPercent(h.gainPct)})` });
+      } else {
+        const change = computeHoldingPeriodChange(state, h.account, h.symbol, dashboardGainPeriod, h.marketValue);
+        gainCell = change
+          ? el('td', { class: change.dollar >= 0 ? 'gain-pos' : 'gain-neg', text: `${change.dollar >= 0 ? '+' : ''}${formatCurrency(change.dollar)} (${formatPercent(change.pct)})` })
+          : el('td', { class: 'help-text', text: 'Not enough history yet' });
+      }
       tbody.appendChild(el('tr', {}, [
         el('td', {}, el('span', { class: 'account-tag', text: h.account })),
         el('td', { text: h.symbol }),
@@ -125,7 +146,7 @@ function renderDashboard(state) {
         el('td', { text: formatCurrency(h.avgCost) }),
         el('td', { text: formatCurrency(h.price) }),
         el('td', { text: formatCurrency(h.marketValue) }),
-        el('td', { class: h.gain >= 0 ? 'gain-pos' : 'gain-neg', text: `${h.gain >= 0 ? '+' : ''}${formatCurrency(h.gain)} (${formatPercent(h.gainPct)})` }),
+        gainCell,
       ]));
     });
     table.appendChild(tbody);

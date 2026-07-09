@@ -58,11 +58,42 @@ function recordSnapshot(state) {
   const today = todayStr();
   const byAccountObj = {};
   totals.byAccount.forEach((a) => { byAccountObj[a.account] = a.value; });
-  const entry = { date: today, total: totals.total, byAccount: byAccountObj };
+  const positionsObj = {};
+  holdings.forEach((h) => { positionsObj[`${h.account}::${h.symbol}`] = h.marketValue; });
+  const entry = { date: today, total: totals.total, byAccount: byAccountObj, positions: positionsObj };
   const idx = state.history.findIndex((h) => h.date === today);
   if (idx >= 0) state.history[idx] = entry;
   else state.history.push(entry);
   state.history.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+const HOLDING_PERIOD_DAYS = { '1d': 1, '1w': 7, '1m': 30, '3m': 90, '1y': 365 };
+const HOLDING_PERIOD_LABELS = { all: 'vs cost basis', '1d': '1 day', '1w': '1 week', '1m': '1 month', '3m': '3 months', '1y': '1 year' };
+
+function findSnapshotOnOrBefore(state, targetDateStr) {
+  let match = null;
+  for (const h of state.history) {
+    if (h.date <= targetDateStr) match = h;
+    else break;
+  }
+  return match;
+}
+
+// Since history snapshots only exist for days the user opened the app, this
+// walks back to the nearest recorded day at or before the requested period -
+// same "closest available data point" approach as the daily change tile.
+function computeHoldingPeriodChange(state, account, symbol, periodKey, currentValue) {
+  const days = HOLDING_PERIOD_DAYS[periodKey];
+  if (!days) return null;
+  const target = new Date();
+  target.setDate(target.getDate() - days);
+  const entry = findSnapshotOnOrBefore(state, todayStr(target));
+  if (!entry || !entry.positions) return null;
+  const past = entry.positions[`${account}::${symbol}`];
+  if (past == null) return null;
+  const dollar = currentValue - past;
+  const pct = past !== 0 ? (dollar / past) * 100 : 0;
+  return { dollar, pct, fromDate: entry.date };
 }
 
 function computeDailyChange(state) {

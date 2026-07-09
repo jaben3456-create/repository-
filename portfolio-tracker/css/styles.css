@@ -142,6 +142,26 @@ main {
   font-size: 1.05rem;
 }
 
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.card-header-row h2 { margin-bottom: 0; }
+
+.card-header-row select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--page-plane);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
 .card .card-sub {
   margin: 0 0 16px;
   color: var(--text-secondary);
