@@ -10,6 +10,42 @@ function renderDividends(state) {
   statGrid.appendChild(makeStatTile('Average per month', formatCurrency(stats.avgMonthly), null));
   root.appendChild(statGrid);
 
+  const projected = computeProjectedDividends(state);
+  const projectedCard = el('div', { class: 'card' });
+  projectedCard.appendChild(el('h2', { text: 'Projected income from current holdings' }));
+  projectedCard.appendChild(el('p', { class: 'card-sub', text: 'Based on the "Annual dividend / share" you set on each position in Holdings & Sync — updates automatically as your shares change. This is a forward-looking estimate, not a record of what was actually paid.' }));
+  if (!projected.rows.length) {
+    projectedCard.appendChild(el('div', { class: 'empty-state', text: 'No positions have an annual dividend rate set yet. Add one via Holdings & Sync → Add / edit a position.' }));
+  } else {
+    const projGrid = el('div', { class: 'stat-grid' });
+    projGrid.appendChild(makeStatTile('Projected annual income', formatCurrency(projected.totalAnnual), null));
+    projGrid.appendChild(makeStatTile('Projected monthly avg', formatCurrency(projected.totalMonthly), null));
+    projGrid.appendChild(makeStatTile('Projected quarterly avg', formatCurrency(projected.totalQuarterly), null));
+    projectedCard.appendChild(projGrid);
+
+    const details = el('details', { class: 'table-toggle' });
+    details.appendChild(el('summary', { text: 'View by holding' }));
+    const table = el('table');
+    table.appendChild(el('thead', {}, el('tr', {}, [
+      el('th', { text: 'Account' }), el('th', { text: 'Symbol' }), el('th', { text: 'Shares' }),
+      el('th', { text: 'Annual div/share' }), el('th', { text: 'Projected annual' }),
+    ])));
+    const tbody = el('tbody');
+    projected.rows.forEach((r) => {
+      tbody.appendChild(el('tr', {}, [
+        el('td', {}, el('span', { class: 'account-tag', text: r.account })),
+        el('td', { text: r.symbol }),
+        el('td', { text: r.shares }),
+        el('td', { text: formatCurrency(r.divRate) }),
+        el('td', { text: formatCurrency(r.annual) }),
+      ]));
+    });
+    table.appendChild(tbody);
+    details.appendChild(el('div', { class: 'table-scroll' }, table));
+    projectedCard.appendChild(details);
+  }
+  root.appendChild(projectedCard);
+
   const formCard = el('div', { class: 'card' });
   formCard.appendChild(el('h2', { text: 'Log a dividend payment' }));
   const form = el('form', { class: 'inline-form' });
