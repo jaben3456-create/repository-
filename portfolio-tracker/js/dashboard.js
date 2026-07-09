@@ -126,7 +126,7 @@ function renderDashboard(state) {
     table.appendChild(el('thead', {}, el('tr', {}, [
       el('th', { text: 'Account' }), el('th', { text: 'Symbol' }), el('th', { text: 'Shares' }),
       el('th', { text: 'Avg cost' }), el('th', { text: 'Price' }), el('th', { text: 'Market value' }),
-      el('th', { text: `Gain/loss (${HOLDING_PERIOD_LABELS[dashboardGainPeriod]})` }),
+      el('th', { text: dashboardGainPeriod === 'all' ? 'Gain/loss (vs cost basis)' : `Gain/loss (${HOLDING_PERIOD_LABELS[dashboardGainPeriod]})` }),
     ])));
     const tbody = el('tbody');
     holdings.sort((a, b) => b.marketValue - a.marketValue).forEach((h) => {
