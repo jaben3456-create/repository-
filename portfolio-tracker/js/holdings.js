@@ -203,6 +203,7 @@ function renderHoldings(state) {
       el('th', { text: 'Div/yr' }), el('th', { text: 'Actions' }),
     ])));
     const tbody = el('tbody');
+    const accountOptions = getKnownAccounts(state);
     state.positions.forEach((p) => {
       const editBtn = el('button', { class: 'link-btn', text: 'Edit' });
       editBtn.addEventListener('click', () => {
@@ -219,8 +220,22 @@ function renderHoldings(state) {
         renderHoldings(state);
         renderDashboard(state);
       });
+      const accountSelect = el('select', { class: 'account-tag-select' });
+      const rowOptions = accountOptions.includes(p.account) ? accountOptions : [...accountOptions, p.account].sort();
+      rowOptions.forEach((acc) => {
+        const o = el('option', { value: acc, text: acc });
+        if (acc === p.account) o.selected = true;
+        accountSelect.appendChild(o);
+      });
+      accountSelect.addEventListener('change', () => {
+        p.account = accountSelect.value;
+        recordSnapshot(state);
+        saveState(state);
+        renderHoldings(state);
+        renderDashboard(state);
+      });
       tbody.appendChild(el('tr', {}, [
-        el('td', {}, el('span', { class: 'account-tag', text: p.account })),
+        el('td', {}, accountSelect),
         el('td', { text: p.symbol }),
         el('td', { text: p.shares }),
         el('td', { text: formatCurrency(p.avgCost) }),

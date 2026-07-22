@@ -138,7 +138,7 @@ function dividendStats(state) {
 }
 
 function getKnownAccounts(state) {
-  const set = new Set(['Robinhood', 'M1 Finance', 'Other']);
+  const set = new Set(['Robinhood Individual', 'Robinhood Roth IRA', 'M1 Finance', 'Other']);
   state.positions.forEach((p) => { if (p.account) set.add(p.account); });
   state.dividends.forEach((d) => { if (d.account) set.add(d.account); });
   return [...set].sort();

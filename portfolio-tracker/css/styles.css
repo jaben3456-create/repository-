@@ -381,6 +381,16 @@ details.table-toggle {
   border: 1px solid var(--border);
 }
 
+.account-tag-select {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--page-plane);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  max-width: 160px;
+}
+
 .actions-cell {
   white-space: nowrap;
 }
