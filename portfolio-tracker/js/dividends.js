@@ -52,12 +52,10 @@ function renderDividends(state) {
   const dateField = el('div', { class: 'field' }, [el('label', { text: 'Date' }), el('input', { id: 'd-date', type: 'date', value: todayStr() })]);
   const accountField = el('div', { class: 'field' }, [
     el('label', { text: 'Account' }),
-    (() => {
-      const sel = el('select', { id: 'd-account' });
-      ['Robinhood', 'M1 Finance', 'Other'].forEach((opt) => sel.appendChild(el('option', { value: opt, text: opt })));
-      return sel;
-    })(),
+    el('input', { id: 'd-account', type: 'text', list: 'dividend-account-suggestions', placeholder: 'Robinhood Individual', value: 'Robinhood' }),
   ]);
+  const accountDatalist = el('datalist', { id: 'dividend-account-suggestions' });
+  getKnownAccounts(state).forEach((acc) => accountDatalist.appendChild(el('option', { value: acc })));
   const symbolField = el('div', { class: 'field' }, [el('label', { text: 'Symbol' }), el('input', { id: 'd-symbol', type: 'text', placeholder: 'AAPL' })]);
   const amountField = el('div', { class: 'field' }, [el('label', { text: 'Amount' }), el('input', { id: 'd-amount', type: 'number', step: 'any', min: '0', placeholder: '4.32' })]);
   const btnField = el('div', { class: 'field' });
@@ -65,6 +63,7 @@ function renderDividends(state) {
 
   form.appendChild(dateField);
   form.appendChild(accountField);
+  form.appendChild(accountDatalist);
   form.appendChild(symbolField);
   form.appendChild(amountField);
   form.appendChild(btnField);
@@ -72,7 +71,7 @@ function renderDividends(state) {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const date = document.getElementById('d-date').value || todayStr();
-    const account = document.getElementById('d-account').value;
+    const account = document.getElementById('d-account').value.trim() || 'Other';
     const symbol = document.getElementById('d-symbol').value.trim().toUpperCase();
     const amount = parseFloat(document.getElementById('d-amount').value);
     if (!symbol || !isFinite(amount)) { alert('Please fill in symbol and amount.'); return; }

@@ -1,5 +1,18 @@
 const { setCors, requireAuth, getClient, unwrap, errorMessage } = require('./_lib');
 
+// SnapTrade's Account.name is "a display name for the account, either
+// assigned by the user or the brokerage itself" - for a multi-account
+// brokerage like Robinhood this is normally something like "Individual" or
+// "Roth IRA". Fall back to raw_type (brokerage's own account type string)
+// or the account number if a name isn't available, so every SnapTrade
+// account maps to its own distinct, human-readable label instead of every
+// sub-account collapsing into one flat "Robinhood" bucket.
+function accountLabel(account) {
+  const raw = account.name || account.raw_type || account.number || account.id;
+  const cleaned = String(raw).replace(/_/g, ' ').trim();
+  return /robinhood/i.test(cleaned) ? cleaned : `Robinhood ${cleaned}`;
+}
+
 // Fetches every connected Robinhood account's current positions and shapes
 // them to match the portfolio tracker's own position schema:
 // { account, symbol, shares, avgCost, price }.
@@ -18,6 +31,7 @@ module.exports = async (req, res) => {
 
     const positions = [];
     for (const account of accounts) {
+      const label = accountLabel(account);
       const posResult = await snaptrade.accountInformation.getUserAccountPositions({
         accountId: account.id,
       });
@@ -31,7 +45,7 @@ module.exports = async (req, res) => {
         const price = p.price != null ? p.price : (p.average_purchase_price || 0);
         positionsSum += p.units * price;
         positions.push({
-          account: 'Robinhood',
+          account: label,
           symbol: ticker,
           shares: p.units,
           avgCost: p.average_purchase_price != null ? p.average_purchase_price : price,
@@ -50,7 +64,7 @@ module.exports = async (req, res) => {
         const remainder = totalAmount - positionsSum;
         if (Math.abs(remainder) > 0.01) {
           positions.push({
-            account: 'Robinhood',
+            account: label,
             symbol: 'CASH',
             shares: remainder,
             avgCost: 1,
