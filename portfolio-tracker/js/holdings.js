@@ -16,19 +16,10 @@ function renderHoldings(state) {
 
   const accountField = el('div', { class: 'field' }, [
     el('label', { text: 'Account' }),
-    (() => {
-      const sel = el('select', { id: 'f-account' });
-      ['Robinhood', 'M1 Finance', 'Other'].forEach((opt) => {
-        const o = el('option', { value: opt, text: opt });
-        if (editing && editing.account === opt) o.selected = true;
-        sel.appendChild(o);
-      });
-      if (editing && !['Robinhood', 'M1 Finance'].includes(editing.account)) {
-        sel.value = 'Other';
-      }
-      return sel;
-    })(),
+    el('input', { id: 'f-account', type: 'text', list: 'account-suggestions', placeholder: 'Robinhood Individual', value: editing ? editing.account : 'Robinhood' }),
   ]);
+  const accountDatalist = el('datalist', { id: 'account-suggestions' });
+  getKnownAccounts(state).forEach((acc) => accountDatalist.appendChild(el('option', { value: acc })));
 
   const symbolField = el('div', { class: 'field' }, [
     el('label', { text: 'Symbol' }),
@@ -52,6 +43,7 @@ function renderHoldings(state) {
   ]);
 
   form.appendChild(accountField);
+  form.appendChild(accountDatalist);
   form.appendChild(symbolField);
   form.appendChild(sharesField);
   form.appendChild(avgCostField);
@@ -71,7 +63,7 @@ function renderHoldings(state) {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const account = document.getElementById('f-account').value;
+    const account = document.getElementById('f-account').value.trim() || 'Other';
     const symbol = document.getElementById('f-symbol').value.trim().toUpperCase();
     const shares = parseFloat(document.getElementById('f-shares').value);
     const avgCost = parseFloat(document.getElementById('f-avgcost').value);
@@ -163,6 +155,41 @@ function renderHoldings(state) {
   quickBtnRow.appendChild(exportM1Btn);
   quickReimportCard.appendChild(quickBtnRow);
   root.appendChild(quickReimportCard);
+
+  const moveCard = el('div', { class: 'card' });
+  moveCard.appendChild(el('h2', { text: 'Move positions between accounts' }));
+  moveCard.appendChild(el('p', { class: 'card-sub', text: 'Reassign every position under one account tag to another in one step - useful for consolidating (e.g. merging a mislabeled sync into "Robinhood Roth IRA") or splitting things out.' }));
+  const usedAccounts = [...new Set(state.positions.map((p) => p.account))].sort();
+  if (!usedAccounts.length) {
+    moveCard.appendChild(el('div', { class: 'empty-state', text: 'No positions yet to move.' }));
+  } else {
+    const moveRow = el('div', { class: 'btn-row', style: 'align-items:center' });
+    const fromSelect = el('select', { id: 'move-from' });
+    usedAccounts.forEach((acc) => fromSelect.appendChild(el('option', { value: acc, text: acc })));
+    const toInput = el('input', { id: 'move-to', type: 'text', list: 'account-suggestions', placeholder: 'Robinhood Roth IRA', style: 'max-width:220px' });
+    const moveBtn = el('button', { class: 'btn secondary', type: 'button', text: 'Move all positions' });
+    moveBtn.addEventListener('click', () => {
+      const from = fromSelect.value;
+      const to = toInput.value.trim();
+      if (!to) { alert('Enter a destination account name.'); return; }
+      const count = state.positions.filter((p) => p.account === from).length;
+      if (!count) { alert(`No positions currently tagged "${from}".`); return; }
+      if (from === to) { alert('Source and destination are the same account.'); return; }
+      if (!confirm(`Move ${count} position(s) from "${from}" to "${to}"?`)) return;
+      state.positions.forEach((p) => { if (p.account === from) p.account = to; });
+      recordSnapshot(state);
+      saveState(state);
+      renderHoldings(state);
+      renderDashboard(state);
+    });
+    moveRow.appendChild(el('span', { class: 'help-text', text: 'From:' }));
+    moveRow.appendChild(fromSelect);
+    moveRow.appendChild(el('span', { class: 'help-text', text: 'To:' }));
+    moveRow.appendChild(toInput);
+    moveRow.appendChild(moveBtn);
+    moveCard.appendChild(moveRow);
+  }
+  root.appendChild(moveCard);
 
   const positionsCard = el('div', { class: 'card' });
   positionsCard.appendChild(el('h2', { text: 'Your positions' }));

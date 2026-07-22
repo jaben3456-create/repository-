@@ -41,10 +41,14 @@ async function connectRobinhood() {
 
 async function syncRobinhoodPositions(state) {
   const { positions } = await callSnapTradeApi('/api/positions');
-  state.positions = state.positions.filter((p) => p.account !== 'Robinhood');
+  // Match by prefix, not exact string - the backend now labels each
+  // Robinhood sub-account distinctly (e.g. "Robinhood Individual",
+  // "Robinhood Roth IRA") instead of one flat "Robinhood" bucket, and this
+  // also sweeps up any old flat-labeled rows from before that change.
+  state.positions = state.positions.filter((p) => !p.account.startsWith('Robinhood'));
   const today = todayStr();
   for (const p of positions) {
-    state.positions.push({ id: uid(), account: 'Robinhood', symbol: p.symbol, shares: p.shares, avgCost: p.avgCost, price: p.price, updatedAt: today });
+    state.positions.push({ id: uid(), account: p.account, symbol: p.symbol, shares: p.shares, avgCost: p.avgCost, price: p.price, updatedAt: today });
   }
   recordSnapshot(state);
   saveState(state);
