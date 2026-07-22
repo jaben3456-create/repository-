@@ -204,7 +204,8 @@ function renderHoldings(state) {
     ])));
     const tbody = el('tbody');
     const accountOptions = getKnownAccounts(state);
-    state.positions.forEach((p) => {
+    const sortedPositions = [...state.positions].sort((a, b) => a.account.localeCompare(b.account) || a.symbol.localeCompare(b.symbol));
+    sortedPositions.forEach((p) => {
       const editBtn = el('button', { class: 'link-btn', text: 'Edit' });
       editBtn.addEventListener('click', () => {
         editingPositionId = p.id;
