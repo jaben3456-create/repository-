@@ -200,7 +200,7 @@ function renderHoldings(state) {
     table.appendChild(el('thead', {}, el('tr', {}, [
       el('th', { text: 'Account' }), el('th', { text: 'Symbol' }), el('th', { text: 'Shares' }),
       el('th', { text: 'Avg cost' }), el('th', { text: 'Price' }), el('th', { text: 'Market value' }),
-      el('th', { text: 'Div/yr' }), el('th', { text: 'Actions' }),
+      el('th', { text: 'Gain/loss %' }), el('th', { text: 'Div/yr' }), el('th', { text: 'Actions' }),
     ])));
     const tbody = el('tbody');
     const accountOptions = getKnownAccounts(state);
@@ -235,6 +235,7 @@ function renderHoldings(state) {
         renderHoldings(state);
         renderDashboard(state);
       });
+      const gainPct = p.avgCost > 0 ? ((p.price - p.avgCost) / p.avgCost) * 100 : 0;
       tbody.appendChild(el('tr', {}, [
         el('td', {}, accountSelect),
         el('td', { text: p.symbol }),
@@ -242,6 +243,7 @@ function renderHoldings(state) {
         el('td', { text: formatCurrency(p.avgCost) }),
         el('td', { text: formatCurrency(p.price) }),
         el('td', { text: formatCurrency(p.shares * p.price) }),
+        el('td', { class: gainPct >= 0 ? 'gain-pos' : 'gain-neg', text: p.avgCost > 0 ? formatPercent(gainPct) : '—' }),
         el('td', { text: p.divRate ? formatCurrency(p.divRate * p.shares) : '—' }),
         el('td', { class: 'actions-cell' }, [editBtn, delBtn]),
       ]));
