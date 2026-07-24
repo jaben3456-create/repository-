@@ -28,6 +28,36 @@
   }
 }
 
+/* Manual override via the theme toggle button - wins over system preference
+   in both directions since these carry higher specificity than a bare :root. */
+:root[data-theme="light"] {
+  --surface-1: #fcfcfb;
+  --page-plane: #f9f9f7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --gridline: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --good: #006300;
+  --critical: #d03b3b;
+  --series-1: #2a78d6;
+}
+
+:root[data-theme="dark"] {
+  --surface-1: #1a1a19;
+  --page-plane: #0d0d0d;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --gridline: #2c2c2a;
+  --baseline: #383835;
+  --border: rgba(255, 255, 255, 0.10);
+  --good: #0ca30c;
+  --critical: #e66767;
+  --series-1: #3987e5;
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -48,6 +78,26 @@ header.app-header h1 {
   font-size: 1.25rem;
   font-weight: 600;
 }
+
+.app-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--page-plane);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.theme-toggle-btn:hover { opacity: 0.85; }
 
 header.app-header p {
   margin: 4px 0 0;

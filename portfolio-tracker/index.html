@@ -4,6 +4,14 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Portfolio Tracker</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('ptrack_theme');
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+})();
+</script>
 <link rel="stylesheet" href="css/styles.css" />
 
 <link rel="manifest" href="manifest.json" />
@@ -18,7 +26,10 @@
 </head>
 <body>
 <header class="app-header">
-  <h1>Portfolio Tracker</h1>
+  <div class="app-header-row">
+    <h1>Portfolio Tracker</h1>
+    <button id="theme-toggle" class="theme-toggle-btn" type="button" aria-label="Toggle light/dark theme">Theme: Auto</button>
+  </div>
   <p>Robinhood + M1 Finance holdings, daily returns, dividends, and long-term projections — all stored locally in this browser.</p>
 </header>
 
